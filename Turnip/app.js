@@ -353,6 +353,13 @@ router.get('/trade', (req, res) => {
   });
 })
 
+router.get('/user', (req, res) => {
+  const token = req.headers['authorization'];
+
+  jwt.verify(token. SECRET_KEY, (err, userData) => {
+    if(err) { return res.status(401).send({error:"Your token doesn't exists or is expired, please login again"});}
+  });
+});
 
 
 
