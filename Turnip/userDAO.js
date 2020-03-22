@@ -14,4 +14,12 @@ module.exports = {
             retFun(err, user)
         });
     },
+    findUserByCode : (code_ami, connection, retFun) => {
+        let statement = `SELECT * from user where code_ami = ?`;
+        let attribute = [code_ami];
+        connection.query(statement, attribute, (err, results, fields) => {
+            let user = results[0];
+            retFun(err, user);
+        });
+    }
 }

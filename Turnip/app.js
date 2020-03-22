@@ -33,7 +33,7 @@ var con = mysql.createConnection({
   host: "localhost",
   user: "user1",
   password: "1234",
-  database: "TurnipDB"
+  database: "turnipDB"
 });
 
 con.connect(function(err) {
@@ -55,11 +55,13 @@ router.post('/register', (req, res) => {
   const pseudo = req.body.pseudo;
   const code_ami = req.body.code_ami;
   const password = bcrypt.hashSync(req.body.password);
+  const status = "membre";
 
   const user = {
     pseudo : pseudo,
     code_ami : code_ami,
     password: password,
+    status : status
   }
 
   userDAO.createUser(user, con, (err) => {
@@ -346,18 +348,48 @@ router.get('/trade', (req, res) => {
       tradeDAO.listeTradeRec(code_ami, con, (err, results) => {
         if(err) {
           log.error(err);
-          res.status(500).send(err);
+          res.status(500).send({error:"une erreur est survenue"});
         }
         res.status(200).send(results);
       });
   });
 })
 
+router.get('/user/:id', (req, res) => {
+  const token = req.headers['authorization'];
+  const id=req.params.id;
+
+  jwt.verify(token, SECRET_KEY, (err, userData) => {
+    if(err) { return res.status(401).send({error:"Your token doesn't exists or is expired, please login again"});}
+
+    const code_ami = userData.id;
+
+    userDAO.findUserByCode(id, con, (err, result) => {
+      if(err) {
+        log.error(err);
+        res.status(500).send({error:"une erreur est survenue"});
+      }
+      res.status(200).send(result);
+    });
+  });
+});
+
+
 router.get('/user', (req, res) => {
   const token = req.headers['authorization'];
 
-  jwt.verify(token. SECRET_KEY, (err, userData) => {
+  jwt.verify(token, SECRET_KEY, (err, userData) => {
     if(err) { return res.status(401).send({error:"Your token doesn't exists or is expired, please login again"});}
+
+    const code_ami = userData.id;
+
+    userDAO.findUserByCode(code_ami, con, (err, result) => {
+      if(err) {
+        log.error(err);
+        res.status(500).send({error:"une erreur est survenue"});
+      }
+      res.status(200).send(result);
+    });
   });
 });
 
